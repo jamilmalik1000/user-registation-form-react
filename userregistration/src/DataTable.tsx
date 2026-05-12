@@ -1,50 +1,35 @@
 import { useState } from "react";
 import type { UserData, StudentData, TeacherData } from "./types";
+import RegistrationForm from "./RegistrationForm";
 
 interface Props {
   records: UserData[];
   onDelete: (id: string) => void;
+  onEdit: (data: UserData) => void;
 }
 
-interface ConfirmState {
-  id: string;
-  name: string;
-  role: "student" | "teacher";
-}
+interface ConfirmState { id: string; name: string; }
 
 function ConfirmDialog({ target, onConfirm, onCancel }: {
-  target: ConfirmState;
-  onConfirm: () => void;
-  onCancel: () => void;
+  target: ConfirmState; onConfirm: () => void; onCancel: () => void;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
-
-      {/* Dialog */}
-      <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4 animate-fade-in">
-        <div className="flex flex-col items-center text-center gap-3">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center text-3xl">
-            🗑️
-          </div>
-          <h3 className="text-lg font-bold text-gray-800">Delete Record?</h3>
-          <p className="text-sm text-gray-500">
-            Are you sure you want to delete{" "}
-            <span className="font-semibold text-gray-700">{target.name}</span>?
-            <br />
-            <span className="text-xs text-red-400">This action cannot be undone.</span>
-          </p>
-        </div>
-
-        <div className="flex gap-3 mt-6">
+      <div className="absolute inset-0 bg-black/30" onClick={onCancel} />
+      <div className="relative bg-white border border-gray-200 p-8 w-full max-w-sm mx-4">
+        <h3 className="text-base font-bold text-gray-800 mb-2">Delete Record?</h3>
+        <p className="text-sm text-gray-500 mb-1">
+          Are you sure you want to delete <span className="font-semibold text-gray-700">{target.name}</span>?
+        </p>
+        <p className="text-xs text-red-500 mb-6">This action cannot be undone.</p>
+        <div className="flex gap-3">
           <button onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl border border-gray-300 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-all">
+            className="px-5 py-2 border border-gray-300 text-gray-600 text-sm font-semibold">
             Cancel
           </button>
           <button onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-all shadow-md">
-            Yes, Delete
+            className="px-5 py-2 bg-red-500 text-white text-sm font-semibold">
+            Delete
           </button>
         </div>
       </div>
@@ -52,94 +37,135 @@ function ConfirmDialog({ target, onConfirm, onCancel }: {
   );
 }
 
-export default function DataTable({ records, onDelete }: Props) {
+function EditModal({ data, onSave, onClose }: {
+  data: UserData; onSave: (d: UserData) => void; onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="relative w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
+        <RegistrationForm
+          editData={data}
+          onSubmit={(updated) => { onSave(updated); onClose(); }}
+          onCancelEdit={onClose}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default function DataTable({ records, onDelete, onEdit }: Props) {
   const [tab, setTab] = useState<"student" | "teacher">("student");
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
-
-  const handleDeleteClick = (id: string, name: string, role: "student" | "teacher") =>
-    setConfirm({ id, name, role });
-
-  const handleConfirm = () => {
-    if (confirm) onDelete(confirm.id);
-    setConfirm(null);
-  };
+  const [editTarget, setEditTarget] = useState<UserData | null>(null);
 
   const students = records.filter((r): r is StudentData => r.role === "student");
   const teachers = records.filter((r): r is TeacherData => r.role === "teacher");
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Registered Records</h2>
+    <div className="bg-white border border-gray-200">
+      <div className="px-8 pt-8 pb-0">
+        <h2 className="text-lg font-bold text-gray-800">Registered Records</h2>
+        <p className="text-xs text-gray-400 mt-1">View, edit or remove registered users</p>
+      </div>
 
       {/* Tabs */}
-      <div className="flex border-b mb-6">
+      <div className="flex border-b border-gray-200 mt-6 px-8">
         <button onClick={() => setTab("student")}
-          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${
-            tab === "student" ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700"
+          className={`py-3 px-4 text-sm font-semibold border-b-2 -mb-px ${
+            tab === "student" ? "border-sky-500 text-sky-600" : "border-transparent text-gray-400"
           }`}>
-           Registered Students
-          <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${tab === "student" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600"}`}>
+          Registered Students
+          <span className={`ml-2 px-2 py-0.5 text-xs font-bold ${
+            tab === "student" ? "bg-sky-100 text-sky-600" : "bg-gray-100 text-gray-400"
+          }`}>
             {students.length}
           </span>
         </button>
         <button onClick={() => setTab("teacher")}
-          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${
-            tab === "teacher" ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-500 hover:text-gray-700"
+          className={`py-3 px-4 text-sm font-semibold border-b-2 -mb-px ${
+            tab === "teacher" ? "border-sky-500 text-sky-600" : "border-transparent text-gray-400"
           }`}>
-           Registered Teachers
-          <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${tab === "teacher" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"}`}>
+          Registered Teachers
+          <span className={`ml-2 px-2 py-0.5 text-xs font-bold ${
+            tab === "teacher" ? "bg-sky-100 text-sky-600" : "bg-gray-100 text-gray-400"
+          }`}>
             {teachers.length}
           </span>
         </button>
       </div>
 
-      {tab === "student" ? (
-        <StudentTable students={students} onDelete={(id, name) => handleDeleteClick(id, name, "student")} />
-      ) : (
-        <TeacherTable teachers={teachers} onDelete={(id, name) => handleDeleteClick(id, name, "teacher")} />
-      )}
+      <div className="p-8 pt-6">
+        {tab === "student" ? (
+          <StudentTable students={students}
+            onEdit={setEditTarget}
+            onDelete={(id, name) => setConfirm({ id, name })} />
+        ) : (
+          <TeacherTable teachers={teachers}
+            onEdit={setEditTarget}
+            onDelete={(id, name) => setConfirm({ id, name })} />
+        )}
+      </div>
 
       {confirm && (
         <ConfirmDialog
           target={confirm}
-          onConfirm={handleConfirm}
+          onConfirm={() => { onDelete(confirm.id); setConfirm(null); }}
           onCancel={() => setConfirm(null)}
+        />
+      )}
+
+      {editTarget && (
+        <EditModal
+          data={editTarget}
+          onSave={(updated) => { onEdit(updated); setEditTarget(null); }}
+          onClose={() => setEditTarget(null)}
         />
       )}
     </div>
   );
 }
 
-function StudentTable({ students, onDelete }: { students: StudentData[]; onDelete: (id: string, name: string) => void }) {
-  if (!students.length)
-    return <EmptyState message="No students registered yet." />;
-
+function StudentTable({ students, onEdit, onDelete }: {
+  students: StudentData[];
+  onEdit: (d: UserData) => void;
+  onDelete: (id: string, name: string) => void;
+}) {
+  if (!students.length) return <EmptyState message="No students registered yet." />;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
         <thead>
-          <tr className="bg-indigo-50 text-indigo-700">
-            {["#", "Full Name", "Email", "Phone", "Gender", "Student ID", "Grade", "Major", "Enroll Year", "Guardian", "Action"].map((h) => (
-              <th key={h} className="px-4 py-3 font-semibold whitespace-nowrap">{h}</th>
+          <tr className="border-b border-gray-200 text-xs text-gray-400 uppercase tracking-wide">
+            {["#", "Full Name", "Email", "Phone", "Gender", "Student ID", "Grade", "Major", "Enroll Year", "Guardian", "Actions"].map((h) => (
+              <th key={h} className="px-3 py-3 font-semibold whitespace-nowrap">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {students.map((s, i) => (
-            <tr key={s.id} className="border-t hover:bg-gray-50 transition-colors">
-              <td className="px-4 py-3 text-gray-500">{i + 1}</td>
-              <td className="px-4 py-3 font-medium text-gray-800">{s.fullName}</td>
-              <td className="px-4 py-3 text-gray-600">{s.email}</td>
-              <td className="px-4 py-3 text-gray-600">{s.phone}</td>
-              <td className="px-4 py-3"><Badge text={s.gender} color="indigo" /></td>
-              <td className="px-4 py-3 text-gray-600">{s.studentId}</td>
-              <td className="px-4 py-3 text-gray-600">{s.grade}</td>
-              <td className="px-4 py-3 text-gray-600">{s.major}</td>
-              <td className="px-4 py-3 text-gray-600">{s.enrollmentYear}</td>
-              <td className="px-4 py-3 text-gray-600">{s.guardianName}</td>
-              <td className="px-4 py-3">
-                <button onClick={() => onDelete(s.id, s.fullName)}
-                  className="text-red-500 hover:text-red-700 font-medium transition-colors">Delete</button>
+            <tr key={s.id} className="border-b border-gray-100 hover:bg-gray-50">
+              <td className="px-3 py-3 text-gray-400">{i + 1}</td>
+              <td className="px-3 py-3 font-semibold text-gray-800">{s.fullName}</td>
+              <td className="px-3 py-3 text-gray-500">{s.email}</td>
+              <td className="px-3 py-3 text-gray-500">{s.phone}</td>
+              <td className="px-3 py-3 text-gray-500">{s.gender}</td>
+              <td className="px-3 py-3 text-gray-500">{s.studentId}</td>
+              <td className="px-3 py-3 text-gray-500">{s.grade}</td>
+              <td className="px-3 py-3 text-gray-500">{s.major}</td>
+              <td className="px-3 py-3 text-gray-500">{s.enrollmentYear}</td>
+              <td className="px-3 py-3 text-gray-500">{s.guardianName}</td>
+              <td className="px-3 py-3">
+                <div className="flex gap-2">
+                  <button onClick={() => onEdit(s)}
+                    className="px-3 py-1 text-xs font-semibold text-sky-600 border border-sky-300 hover:bg-sky-50">
+                    Edit
+                  </button>
+                  <button onClick={() => onDelete(s.id, s.fullName)}
+                    className="px-3 py-1 text-xs font-semibold text-red-500 border border-red-300 hover:bg-red-50">
+                    Delete
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
@@ -149,37 +175,47 @@ function StudentTable({ students, onDelete }: { students: StudentData[]; onDelet
   );
 }
 
-function TeacherTable({ teachers, onDelete }: { teachers: TeacherData[]; onDelete: (id: string, name: string) => void }) {
-  if (!teachers.length)
-    return <EmptyState message="No teachers registered yet." />;
-
+function TeacherTable({ teachers, onEdit, onDelete }: {
+  teachers: TeacherData[];
+  onEdit: (d: UserData) => void;
+  onDelete: (id: string, name: string) => void;
+}) {
+  if (!teachers.length) return <EmptyState message="No teachers registered yet." />;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
         <thead>
-          <tr className="bg-emerald-50 text-emerald-700">
-            {["#", "Full Name", "Email", "Phone", "Gender", "Employee ID", "Department", "Subject", "Qualification", "Experience", "Joining Date", "Action"].map((h) => (
-              <th key={h} className="px-4 py-3 font-semibold whitespace-nowrap">{h}</th>
+          <tr className="border-b border-gray-200 text-xs text-gray-400 uppercase tracking-wide">
+            {["#", "Full Name", "Email", "Phone", "Gender", "Employee ID", "Department", "Subject", "Qualification", "Experience", "Joining Date", "Actions"].map((h) => (
+              <th key={h} className="px-3 py-3 font-semibold whitespace-nowrap">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {teachers.map((t, i) => (
-            <tr key={t.id} className="border-t hover:bg-gray-50 transition-colors">
-              <td className="px-4 py-3 text-gray-500">{i + 1}</td>
-              <td className="px-4 py-3 font-medium text-gray-800">{t.fullName}</td>
-              <td className="px-4 py-3 text-gray-600">{t.email}</td>
-              <td className="px-4 py-3 text-gray-600">{t.phone}</td>
-              <td className="px-4 py-3"><Badge text={t.gender} color="emerald" /></td>
-              <td className="px-4 py-3 text-gray-600">{t.employeeId}</td>
-              <td className="px-4 py-3 text-gray-600">{t.department}</td>
-              <td className="px-4 py-3 text-gray-600">{t.subject}</td>
-              <td className="px-4 py-3 text-gray-600">{t.qualification}</td>
-              <td className="px-4 py-3 text-gray-600">{t.experience} yrs</td>
-              <td className="px-4 py-3 text-gray-600">{t.joiningDate}</td>
-              <td className="px-4 py-3">
-                <button onClick={() => onDelete(t.id, t.fullName)}
-                  className="text-red-500 hover:text-red-700 font-medium transition-colors">Delete</button>
+            <tr key={t.id} className="border-b border-gray-100 hover:bg-gray-50">
+              <td className="px-3 py-3 text-gray-400">{i + 1}</td>
+              <td className="px-3 py-3 font-semibold text-gray-800">{t.fullName}</td>
+              <td className="px-3 py-3 text-gray-500">{t.email}</td>
+              <td className="px-3 py-3 text-gray-500">{t.phone}</td>
+              <td className="px-3 py-3 text-gray-500">{t.gender}</td>
+              <td className="px-3 py-3 text-gray-500">{t.employeeId}</td>
+              <td className="px-3 py-3 text-gray-500">{t.department}</td>
+              <td className="px-3 py-3 text-gray-500">{t.subject}</td>
+              <td className="px-3 py-3 text-gray-500">{t.qualification}</td>
+              <td className="px-3 py-3 text-gray-500">{t.experience} yrs</td>
+              <td className="px-3 py-3 text-gray-500">{t.joiningDate}</td>
+              <td className="px-3 py-3">
+                <div className="flex gap-2">
+                  <button onClick={() => onEdit(t)}
+                    className="px-3 py-1 text-xs font-semibold text-sky-600 border border-sky-300 hover:bg-sky-50">
+                    Edit
+                  </button>
+                  <button onClick={() => onDelete(t.id, t.fullName)}
+                    className="px-3 py-1 text-xs font-semibold text-red-500 border border-red-300 hover:bg-red-50">
+                    Delete
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
@@ -189,18 +225,10 @@ function TeacherTable({ teachers, onDelete }: { teachers: TeacherData[]; onDelet
   );
 }
 
-function Badge({ text, color }: { text: string; color: "indigo" | "emerald" }) {
-  const cls = color === "indigo"
-    ? "bg-indigo-100 text-indigo-700"
-    : "bg-emerald-100 text-emerald-700";
-  return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>{text}</span>;
-}
-
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="text-center py-16 text-gray-400">
-      <p className="text-4xl mb-3"></p>
-      <p className="text-sm">{message}</p>
+    <div className="text-center py-16">
+      <p className="text-gray-400 text-sm">{message}</p>
     </div>
   );
 }

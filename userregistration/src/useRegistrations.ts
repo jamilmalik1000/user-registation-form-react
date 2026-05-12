@@ -12,17 +12,18 @@ export function useRegistrations() {
     }
   });
 
-  const addRecord = (data: UserData) => {
-    const updated = [...records, data];
+  const save = (updated: UserData[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     setRecords(updated);
   };
 
-  const deleteRecord = (id: string) => {
-    const updated = records.filter((r) => r.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    setRecords(updated);
-  };
+  const addRecord = (data: UserData) => save([...records, data]);
 
-  return { records, addRecord, deleteRecord };
+  const updateRecord = (data: UserData) =>
+    save(records.map((r) => (r.id === data.id ? data : r)));
+
+  const deleteRecord = (id: string) =>
+    save(records.filter((r) => r.id !== id));
+
+  return { records, addRecord, updateRecord, deleteRecord };
 }
