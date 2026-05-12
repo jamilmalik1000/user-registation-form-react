@@ -10,15 +10,15 @@ const commonFields = (
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
 ) => (
   <>
-    <Field label="Full Name" name="fullName" value={vals.fullName} onChange={onChange} required />
-    <Field label="Email" name="email" type="email" value={vals.email} onChange={onChange} required />
-    <Field label="Phone" name="phone" type="tel" value={vals.phone} onChange={onChange} required />
-    <Field label="Date of Birth" name="dob" type="date" value={vals.dob} onChange={onChange} required />
+    <Field label="Full Name" name="fullName" placeholder="e.g. John Doe" value={vals.fullName} onChange={onChange} required />
+    <Field label="Email" name="email" type="email" placeholder="e.g. john@example.com" value={vals.email} onChange={onChange} required />
+    <Field label="Phone" name="phone" type="tel" placeholder="e.g. +1 234 567 8900" value={vals.phone} onChange={onChange} required />
+    <Field label="Date of Birth" name="dob" type="date" placeholder="" value={vals.dob} onChange={onChange} required />
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
       <select name="gender" value={vals.gender} onChange={onChange} required
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <option value="">Select Gender</option>
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-700">
+        <option value="">— Select Gender —</option>
         <option>Male</option>
         <option>Female</option>
         <option>Other</option>
@@ -27,21 +27,22 @@ const commonFields = (
     <div className="md:col-span-2">
       <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
       <textarea name="address" value={vals.address} onChange={onChange} rows={2} required
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        placeholder="e.g. 123 Main Street, City, Country"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400" />
     </div>
   </>
 );
 
-function Field({ label, name, value, onChange, type = "text", required = false }: {
+function Field({ label, name, value, onChange, type = "text", required = false, placeholder = "" }: {
   label: string; name: string; value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  type?: string; required?: boolean;
+  type?: string; required?: boolean; placeholder?: string;
 }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <input type={type} name={name} value={value} onChange={onChange} required={required}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      <input type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400" />
     </div>
   );
 }
@@ -110,15 +111,15 @@ export default function RegistrationForm({ onSubmit }: Props) {
               <div className="md:col-span-2 border-t pt-4 mt-2">
                 <p className="text-sm font-semibold text-indigo-600 mb-3 uppercase tracking-wide">Academic Info</p>
               </div>
-              <Field label="Student ID" name="studentId" value={sVals.studentId} onChange={handleS} required />
-              <Field label="Grade / Class" name="grade" value={sVals.grade} onChange={handleS} required />
-              <Field label="Major / Stream" name="major" value={sVals.major} onChange={handleS} required />
-              <Field label="Enrollment Year" name="enrollmentYear" type="number" value={sVals.enrollmentYear} onChange={handleS} required />
+              <Field label="Student ID" name="studentId" placeholder="e.g. STU-2024-001" value={sVals.studentId} onChange={handleS} required />
+              <Field label="Grade / Class" name="grade" placeholder="e.g. Grade 10 / Class A" value={sVals.grade} onChange={handleS} required />
+              <Field label="Major / Stream" name="major" placeholder="e.g. Computer Science" value={sVals.major} onChange={handleS} required />
+              <Field label="Enrollment Year" name="enrollmentYear" type="number" placeholder="e.g. 2024" value={sVals.enrollmentYear} onChange={handleS} required />
               <div className="md:col-span-2 border-t pt-4 mt-2">
                 <p className="text-sm font-semibold text-indigo-600 mb-3 uppercase tracking-wide">Guardian Info</p>
               </div>
-              <Field label="Guardian Name" name="guardianName" value={sVals.guardianName} onChange={handleS} required />
-              <Field label="Guardian Phone" name="guardianPhone" type="tel" value={sVals.guardianPhone} onChange={handleS} required />
+              <Field label="Guardian Name" name="guardianName" placeholder="e.g. Jane Doe" value={sVals.guardianName} onChange={handleS} required />
+              <Field label="Guardian Phone" name="guardianPhone" type="tel" placeholder="e.g. +1 234 567 8900" value={sVals.guardianPhone} onChange={handleS} required />
             </>
           ) : (
             <>
@@ -126,12 +127,12 @@ export default function RegistrationForm({ onSubmit }: Props) {
               <div className="md:col-span-2 border-t pt-4 mt-2">
                 <p className="text-sm font-semibold text-emerald-600 mb-3 uppercase tracking-wide">Professional Info</p>
               </div>
-              <Field label="Employee ID" name="employeeId" value={tVals.employeeId} onChange={handleT} required />
-              <Field label="Department" name="department" value={tVals.department} onChange={handleT} required />
-              <Field label="Subject Taught" name="subject" value={tVals.subject} onChange={handleT} required />
-              <Field label="Qualification" name="qualification" value={tVals.qualification} onChange={handleT} required />
-              <Field label="Experience (years)" name="experience" type="number" value={tVals.experience} onChange={handleT} required />
-              <Field label="Joining Date" name="joiningDate" type="date" value={tVals.joiningDate} onChange={handleT} required />
+              <Field label="Employee ID" name="employeeId" placeholder="e.g. EMP-2024-001" value={tVals.employeeId} onChange={handleT} required />
+              <Field label="Department" name="department" placeholder="e.g. Mathematics" value={tVals.department} onChange={handleT} required />
+              <Field label="Subject Taught" name="subject" placeholder="e.g. Algebra & Calculus" value={tVals.subject} onChange={handleT} required />
+              <Field label="Qualification" name="qualification" placeholder="e.g. M.Sc. Mathematics" value={tVals.qualification} onChange={handleT} required />
+              <Field label="Experience (years)" name="experience" type="number" placeholder="e.g. 5" value={tVals.experience} onChange={handleT} required />
+              <Field label="Joining Date" name="joiningDate" type="date" placeholder="" value={tVals.joiningDate} onChange={handleT} required />
             </>
           )}
         </div>

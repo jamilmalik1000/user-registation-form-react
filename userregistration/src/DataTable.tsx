@@ -22,7 +22,7 @@ export default function DataTable({ records, onDelete }: Props) {
           className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${
             tab === "student" ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700"
           }`}>
-          🎓 Registered Students
+           Registered Students
           <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${tab === "student" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600"}`}>
             {students.length}
           </span>
@@ -31,7 +31,7 @@ export default function DataTable({ records, onDelete }: Props) {
           className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 ${
             tab === "teacher" ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-500 hover:text-gray-700"
           }`}>
-          👨🏫 Registered Teachers
+           Registered Teachers
           <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${tab === "teacher" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"}`}>
             {teachers.length}
           </span>
@@ -136,7 +136,7 @@ function Badge({ text, color }: { text: string; color: "indigo" | "emerald" }) {
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="text-center py-16 text-gray-400">
-      <p className="text-4xl mb-3">📋</p>
+      <p className="text-4xl mb-3"></p>
       <p className="text-sm">{message}</p>
     </div>
   );
