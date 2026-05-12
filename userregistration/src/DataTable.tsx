@@ -6,8 +6,63 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
+interface ConfirmState {
+  id: string;
+  name: string;
+  role: "student" | "teacher";
+}
+
+function ConfirmDialog({ target, onConfirm, onCancel }: {
+  target: ConfirmState;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
+
+      {/* Dialog */}
+      <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4 animate-fade-in">
+        <div className="flex flex-col items-center text-center gap-3">
+          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center text-3xl">
+            🗑️
+          </div>
+          <h3 className="text-lg font-bold text-gray-800">Delete Record?</h3>
+          <p className="text-sm text-gray-500">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-gray-700">{target.name}</span>?
+            <br />
+            <span className="text-xs text-red-400">This action cannot be undone.</span>
+          </p>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button onClick={onCancel}
+            className="flex-1 py-2.5 rounded-xl border border-gray-300 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-all">
+            Cancel
+          </button>
+          <button onClick={onConfirm}
+            className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-all shadow-md">
+            Yes, Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DataTable({ records, onDelete }: Props) {
   const [tab, setTab] = useState<"student" | "teacher">("student");
+  const [confirm, setConfirm] = useState<ConfirmState | null>(null);
+
+  const handleDeleteClick = (id: string, name: string, role: "student" | "teacher") =>
+    setConfirm({ id, name, role });
+
+  const handleConfirm = () => {
+    if (confirm) onDelete(confirm.id);
+    setConfirm(null);
+  };
 
   const students = records.filter((r): r is StudentData => r.role === "student");
   const teachers = records.filter((r): r is TeacherData => r.role === "teacher");
@@ -39,15 +94,23 @@ export default function DataTable({ records, onDelete }: Props) {
       </div>
 
       {tab === "student" ? (
-        <StudentTable students={students} onDelete={onDelete} />
+        <StudentTable students={students} onDelete={(id, name) => handleDeleteClick(id, name, "student")} />
       ) : (
-        <TeacherTable teachers={teachers} onDelete={onDelete} />
+        <TeacherTable teachers={teachers} onDelete={(id, name) => handleDeleteClick(id, name, "teacher")} />
+      )}
+
+      {confirm && (
+        <ConfirmDialog
+          target={confirm}
+          onConfirm={handleConfirm}
+          onCancel={() => setConfirm(null)}
+        />
       )}
     </div>
   );
 }
 
-function StudentTable({ students, onDelete }: { students: StudentData[]; onDelete: (id: string) => void }) {
+function StudentTable({ students, onDelete }: { students: StudentData[]; onDelete: (id: string, name: string) => void }) {
   if (!students.length)
     return <EmptyState message="No students registered yet." />;
 
@@ -75,7 +138,7 @@ function StudentTable({ students, onDelete }: { students: StudentData[]; onDelet
               <td className="px-4 py-3 text-gray-600">{s.enrollmentYear}</td>
               <td className="px-4 py-3 text-gray-600">{s.guardianName}</td>
               <td className="px-4 py-3">
-                <button onClick={() => onDelete(s.id)}
+                <button onClick={() => onDelete(s.id, s.fullName)}
                   className="text-red-500 hover:text-red-700 font-medium transition-colors">Delete</button>
               </td>
             </tr>
@@ -86,7 +149,7 @@ function StudentTable({ students, onDelete }: { students: StudentData[]; onDelet
   );
 }
 
-function TeacherTable({ teachers, onDelete }: { teachers: TeacherData[]; onDelete: (id: string) => void }) {
+function TeacherTable({ teachers, onDelete }: { teachers: TeacherData[]; onDelete: (id: string, name: string) => void }) {
   if (!teachers.length)
     return <EmptyState message="No teachers registered yet." />;
 
@@ -115,7 +178,7 @@ function TeacherTable({ teachers, onDelete }: { teachers: TeacherData[]; onDelet
               <td className="px-4 py-3 text-gray-600">{t.experience} yrs</td>
               <td className="px-4 py-3 text-gray-600">{t.joiningDate}</td>
               <td className="px-4 py-3">
-                <button onClick={() => onDelete(t.id)}
+                <button onClick={() => onDelete(t.id, t.fullName)}
                   className="text-red-500 hover:text-red-700 font-medium transition-colors">Delete</button>
               </td>
             </tr>
